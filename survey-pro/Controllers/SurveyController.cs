@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace survey_pro.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/surveys")]
     public class SurveysController : ControllerBase
     {
         private readonly ISurveyService _surveyService;

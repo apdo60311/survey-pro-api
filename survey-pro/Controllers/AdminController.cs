@@ -7,7 +7,7 @@ using survey_pro.Models;
 namespace survey_pro.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/admin")]
     [Authorize(Policy = "AdminOnly")]
     public class AdminController : ControllerBase
     {

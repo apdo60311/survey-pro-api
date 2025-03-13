@@ -4,6 +4,7 @@ namespace survey_pro.Settings
     {
         public required string ConnectionString { get; set; }
         public required string DatabaseName { get; set; }
+        public string? AppDatabaseName { get; set; }
         public required string UsersCollection { get; set; }
         public string RolesCollection { get; set; } = "Roles";
         public string SurveysCollection { get; set; } = "Surveys";

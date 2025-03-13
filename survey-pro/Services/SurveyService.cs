@@ -25,7 +25,7 @@ public class SurveyService : ISurveyService
           )
     {
         var client = new MongoClient(mongoSettings.Value.ConnectionString);
-        var database = client.GetDatabase(mongoSettings.Value.DatabaseName);
+        var database = client.GetDatabase(mongoSettings.Value.AppDatabaseName);
         _surveys = database.GetCollection<Survey>(mongoSettings.Value.SurveysCollection);
         _surveyResponses = database.GetCollection<SurveyResponse>(mongoSettings.Value.ResponsesCollection);
 

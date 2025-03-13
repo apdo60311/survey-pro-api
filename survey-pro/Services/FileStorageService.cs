@@ -12,8 +12,8 @@ public class FileStorageService : IFileStorageService
 
     public FileStorageService(
                 IOptions<MongoDbSettings> mongoSettings, IConfiguration configuration)
-    {
-        var database = new MongoClient().GetDatabase(mongoSettings.Value.DatabaseName);
+    { var client = new MongoClient(mongoSettings.Value.ConnectionString);
+        var database = client.GetDatabase(mongoSettings.Value.AppDatabaseName);
         _gridFS = new GridFSBucket(database);
         _baseUrl = configuration["BaseUrl"] ?? "http://localhost:5098";
     }

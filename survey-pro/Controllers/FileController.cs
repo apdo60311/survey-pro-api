@@ -1,15 +1,16 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using survey_pro.Interfaces;
 
 namespace survey_pro.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/files")]
     public class FilesController : ControllerBase
     {
-        private readonly FileStorageService _fileStorage;
+        private readonly IFileStorageService _fileStorage;
 
-        public FilesController(FileStorageService fileStorage)
+        public FilesController(IFileStorageService fileStorage)
         {
             _fileStorage = fileStorage;
         }
