@@ -13,9 +13,18 @@ public class SurveyResponse
     [BsonRepresentation(BsonType.ObjectId)]
     public string SurveyId { get; set; }
 
-    public string RespondentId { get; set; }
+    public string? RespondentId { get; set; }
 
     public DateTime SubmittedAt { get; set; }
 
-    public Dictionary<string, object> Answers { get; set; } = new Dictionary<string, object>();
+    public List<QuestionResponse> Responses { get; set; }
+
+}
+
+
+public class QuestionResponse
+{
+    public string QuestionId { get; set; }
+    public string Answer { get; set; }
+    public List<string> SelectedOptions { get; set; }
 }

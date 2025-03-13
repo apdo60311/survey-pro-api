@@ -1,6 +1,9 @@
 using System;
 using System.Security.Claims;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using survey_pro.Dtos;
 using survey_pro.Interfaces;
@@ -44,6 +47,18 @@ public class SurveyService : ISurveyService
 
     public async Task<Survey> CreateSurveyAsync(SurveyDto surveyDto, string userId)
     {
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            Converters =
+            {
+                new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseUpper)
+            }
+        };
+
+
+        var questions = JsonSerializer.Deserialize<List<QuestionDto>>(surveyDto.QuestionsJson, options);
         var survey = new Survey
         {
             Title = surveyDto.Title,
@@ -60,10 +75,11 @@ public class SurveyService : ISurveyService
         }
 
         // Process questions
-        foreach (var questionDto in surveyDto.Questions)
+        foreach (var questionDto in questions)
         {
             var question = new Question
             {
+                Id = ObjectId.GenerateNewId().ToString(),
                 Title = questionDto.Title,
                 Description = questionDto.Description,
                 Type = questionDto.Type,
@@ -84,6 +100,61 @@ public class SurveyService : ISurveyService
         return survey;
     }
 
+
+    public async Task<SurveyResponse> RespondToSurveyAsync(string surveyId, string? userId, List<QuestionResponse> responses)
+    {
+        var survey = await _surveys.Find(s => s.Id == surveyId && s.IsActive).FirstOrDefaultAsync();
+        if (survey == null)
+        {
+            throw new KeyNotFoundException("Survey not found or is inactive");
+        }
+
+        var requiredQuestionIds = survey.Questions!
+            .Where(q => q.IsRequired)
+            .Select(q => q.Id)
+            .ToHashSet();
+
+        var answeredQuestionIds = responses
+            .Select(r => r.QuestionId)
+            .ToHashSet();
+
+        if (!requiredQuestionIds.All(id => answeredQuestionIds.Contains(id)))
+        {
+            throw new ArgumentException("Not all required questions were answered");
+        }
+
+        var surveyResponse = new SurveyResponse
+        {
+            SurveyId = surveyId,
+            RespondentId = userId,
+            SubmittedAt = DateTime.UtcNow,
+            Responses = responses.Select(r => new QuestionResponse
+            {
+                QuestionId = r.QuestionId,
+                Answer = r.Answer,
+                SelectedOptions = r.SelectedOptions
+            }).ToList()
+        };
+
+        await _surveyResponses.InsertOneAsync(surveyResponse);
+        return surveyResponse;
+    }
+
+    public async Task<List<SurveyResponse>> GetSurveyResponsesAsync(string surveyId)
+    {
+        var responses = await _surveyResponses
+            .Find(r => r.SurveyId == surveyId)
+            .ToListAsync();
+
+        if (!responses.Any())
+        {
+            throw new KeyNotFoundException("No responses found for this survey");
+        }
+
+        return responses;
+    }
+
+
     public async Task<bool> UpdateSurveyAsync(string id, SurveyUpdateDto surveyDto)
     {
         var existingSurvey = await _surveys.Find(s => s.Id == id).FirstOrDefaultAsync();
@@ -93,7 +164,6 @@ public class SurveyService : ISurveyService
             return false;
         }
 
-        // Update basic info
         existingSurvey.Title = surveyDto.Title;
         existingSurvey.Description = surveyDto.Description;
         existingSurvey.IsActive = surveyDto.IsActive;
@@ -187,7 +257,6 @@ public class SurveyService : ISurveyService
             _fileStorageService.DeleteFile(survey.CoverImageUrl);
         }
 
-        // Delete question images
         foreach (var question in survey.Questions ?? [])
         {
             if (!string.IsNullOrEmpty(question.ImageUrl))

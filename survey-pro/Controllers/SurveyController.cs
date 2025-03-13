@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using survey_pro.Dtos;
 using survey_pro.Interfaces;
+using survey_pro.Models;
 using survey_pro.Services;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -45,6 +46,35 @@ namespace survey_pro.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var survey = await _surveyService.CreateSurveyAsync(surveyDto, userId);
             return CreatedAtAction(nameof(GetById), new { id = survey.Id }, survey);
+        }
+
+
+        [HttpPost("{id}/respond")]
+        public async Task<IActionResult> RespondToSurvey(string id, [FromBody] List<QuestionResponse> responses)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            try
+            {
+                var surveyResponse = await _surveyService.RespondToSurveyAsync(id, userId, responses);
+                return CreatedAtAction(nameof(GetById), new { id = surveyResponse.Id }, surveyResponse);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("{id}/responses")]
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<IActionResult> GetSurveyResponses(string id)
+        {
+            var responses = await _surveyService.GetSurveyResponsesAsync(id);
+            return Ok(responses);
         }
 
         [HttpPut("{id}")]

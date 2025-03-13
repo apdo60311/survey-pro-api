@@ -20,8 +20,9 @@ public class Question
 
 public enum QuestionType
 {
-    MultipleChoice,
-    SingleChoice,
-    Text,
-    Rating
+    RATING,
+    MULTIPLE_CHOICE,
+    TEXT,
+    CHECKBOX,
+    SCALE
 }

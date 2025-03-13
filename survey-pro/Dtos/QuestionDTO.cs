@@ -5,7 +5,7 @@ namespace survey_pro.Dtos;
 
 public class QuestionDto
 {
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     public string Title { get; set; }
 
@@ -28,7 +28,9 @@ public class SurveyDto
 
     public IFormFile CoverImage { get; set; }
 
-    public List<QuestionDto> Questions { get; set; } = new List<QuestionDto>();
+    // public List<QuestionDto> Questions { get; set; } = new List<QuestionDto>();
+
+    public string? QuestionsJson { get; set; }
 
     public bool IsActive { get; set; }
 }
