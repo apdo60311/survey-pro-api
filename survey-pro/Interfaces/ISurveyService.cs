@@ -13,5 +13,7 @@ public interface ISurveyService
     Task<bool> DeleteSurveyAsync(string id);
     Task<SurveyResponse> RespondToSurveyAsync(string surveyId, string? userId, List<QuestionResponse> responses);
     Task<List<SurveyResponse>> GetSurveyResponsesAsync(string surveyId);
+    Task<Survey> AddQuestionsToSurveyAsync(string surveyId, List<QuestionDto> questionDtos);
+
     // Task<Survey> ImportFromGoogleFormsAsync(ImportGoogleFormsDto importDto, string? userId);
 }

@@ -103,6 +103,29 @@ namespace survey_pro.Controllers
             return NoContent();
         }
 
+
+        [HttpPost("{surveyId}/questions")]
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<IActionResult> AddQuestionsToSurvey(string surveyId, [FromBody] List<QuestionDto> questions)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            try
+            {
+                var updatedSurvey = await _surveyService.AddQuestionsToSurveyAsync(surveyId, questions);
+                return Ok(updatedSurvey);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { message = "Survey not found" });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+
         /*       [HttpPost("import-google-form")]
                [Authorize(Roles = "Admin")]
                public async Task<IActionResult> ImportFromGoogleForms([FromForm] ImportGoogleFormsDto importDto)

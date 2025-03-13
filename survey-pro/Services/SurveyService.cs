@@ -154,6 +154,39 @@ public class SurveyService : ISurveyService
         return responses;
     }
 
+    public async Task<Survey> AddQuestionsToSurveyAsync(string surveyId, List<QuestionDto> questionDtos)
+    {
+        var survey = await _surveys.Find(s => s.Id == surveyId).FirstOrDefaultAsync();
+        if (survey == null)
+        {
+            throw new KeyNotFoundException("Survey not found");
+        }
+
+        foreach (var questionDto in questionDtos)
+        {
+            var question = new Question
+            {
+                Id = ObjectId.GenerateNewId().ToString(),
+                Title = questionDto.Title,
+                Description = questionDto.Description,
+                Type = questionDto.Type,
+                Options = questionDto.Options,
+                IsRequired = questionDto.IsRequired
+            };
+
+            if (questionDto.Image != null)
+            {
+                question.ImageUrl = await _fileStorageService.SaveFileAsync(questionDto.Image, "question-images");
+            }
+
+            survey.Questions.Add(question);
+        }
+
+        survey.UpdatedAt = DateTime.UtcNow;
+        await _surveys.ReplaceOneAsync(s => s.Id == surveyId, survey);
+        return survey;
+    }
+
 
     public async Task<bool> UpdateSurveyAsync(string id, SurveyUpdateDto surveyDto)
     {
