@@ -91,13 +91,13 @@ builder.Services.AddCors(options =>
 
 
 
-builder.Services.AddHttpsRedirection(
-    options =>
-{
-    options.HttpsPort = builder.Environment.IsDevelopment() ? 5001 : 443;
-    options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
-}
-);
+// builder.Services.AddHttpsRedirection(
+//     options =>
+// {
+//     options.HttpsPort = builder.Environment.IsDevelopment() ? 5001 : 443;
+//     options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
+// }
+// );
 
 
 var app = builder.Build();
@@ -111,11 +111,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-if (app.Environment.IsProduction())
-{
-    app.UseHttpsRedirection();
-    app.UseHsts();
-}
+// if (app.Environment.IsProduction())
+// {
+//     app.UseHttpsRedirection();
+//     app.UseHsts();
+// }
 app.UseCors("AllowAll");
 
 
