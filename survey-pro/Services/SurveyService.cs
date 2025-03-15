@@ -137,6 +137,10 @@ public class SurveyService : ISurveyService
         };
 
         await _surveyResponses.InsertOneAsync(surveyResponse);
+
+        var update = Builders<Survey>.Update.Inc(s => s.NumberOfResponses, 1);
+        await _surveys.UpdateOneAsync(s => s.Id == surveyId, update);
+
         return surveyResponse;
     }
 

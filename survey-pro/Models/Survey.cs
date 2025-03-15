@@ -13,6 +13,7 @@ public class Survey
     public string? Description { get; set; }
     public List<string> Categories { get; set; } = [];
     public int NumberOfQuestions { get; set; }
+    public int NumberOfResponses { get; set; } = 0;
     public TimeSpan EstimatedCompletionTime { get; set; }
 
     public string? CoverImageUrl { get; set; }

@@ -125,6 +125,17 @@ namespace survey_pro.Controllers
             }
         }
 
+        [HttpGet("{id}/response-count")]
+        public async Task<IActionResult> GetResponseCount(string id)
+        {
+            var survey = await _surveyService.GetSurveyByIdAsync(id);
+            if (survey == null)
+            {
+                return NotFound(new { message = "Survey not found" });
+            }
+
+            return Ok(new { surveyId = id, responseCount = survey.NumberOfResponses });
+        }
 
         /*       [HttpPost("import-google-form")]
                [Authorize(Roles = "Admin")]
