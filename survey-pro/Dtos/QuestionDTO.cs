@@ -26,6 +26,8 @@ public class SurveyDto
 
     public string Description { get; set; }
 
+    public List<string> Categories { get; set; } = [];
+
     public IFormFile CoverImage { get; set; }
 
     // public List<QuestionDto> Questions { get; set; } = new List<QuestionDto>();

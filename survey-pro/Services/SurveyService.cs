@@ -63,6 +63,7 @@ public class SurveyService : ISurveyService
         {
             Title = surveyDto.Title,
             Description = surveyDto.Description,
+            Categories = surveyDto.Categories,
             CreatedAt = DateTime.UtcNow,
             CreatedBy = userId,
             IsActive = surveyDto.IsActive,
