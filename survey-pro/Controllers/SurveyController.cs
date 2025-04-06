@@ -5,6 +5,7 @@ using survey_pro.Interfaces;
 using survey_pro.Models;
 using survey_pro.Services;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace survey_pro.Controllers
@@ -137,7 +138,69 @@ namespace survey_pro.Controllers
             return Ok(new { surveyId = id, responseCount = survey.NumberOfResponses });
         }
 
-        /*       [HttpPost("import-google-form")]
+
+        [HttpGet("{id}/responses/export")]
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<IActionResult> ExportResponses(string id)
+        {
+            try
+            {
+                var survey = await _surveyService.GetSurveyByIdAsync(id);
+                if (survey == null)
+                {
+                    return NotFound(new { message = "Survey not found" });
+                }
+
+                var responses = await _surveyService.GetSurveyResponsesAsync(id);
+                if (!responses.Any())
+                {
+                    return NotFound(new { message = "No responses found for this survey" });
+                }
+
+                var csvContent = new StringBuilder();
+
+                var headers = new List<string> { "ResponseId", "RespondentId", "SubmittedAt" };
+                foreach (var question in survey.Questions ?? [])
+                {
+                    headers.Add($"Q{question.Id}: {question.Title}");
+                }
+                csvContent.AppendLine(string.Join(",", headers.Select(h => $"\"{h}\"")));
+
+                foreach (var response in responses)
+                {
+                    var row = new List<string>
+            {
+                response.Id,
+                response.RespondentId ?? "Anonymous",
+                response.SubmittedAt.ToString("yyyy-MM-dd HH:mm:ss")
+            };
+
+                    foreach (var question in survey.Questions ?? [])
+                    {
+                        var answer = response.Responses
+                            .FirstOrDefault(r => r.QuestionId == question.Id);
+
+                        var answerText = answer != null
+                            ? (question.Type == QuestionType.CHECKBOX
+                                ? string.Join(";", answer.SelectedOptions)
+                                : answer.Answer)
+                            : "";
+
+                        row.Add($"\"{answerText.Replace("\"", "\"\"")}\"");
+                    }
+
+                    csvContent.AppendLine(string.Join(",", row));
+                }
+
+                byte[] bytes = Encoding.UTF8.GetBytes(csvContent.ToString());
+                string fileName = $"survey-responses-{id}-{DateTime.UtcNow:yyyyMMdd}.csv";
+                return File(bytes, "text/csv", fileName);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Failed to export responses", error = ex.Message });
+            }
+        }        /*       [HttpPost("import-google-form")]
                [Authorize(Roles = "Admin")]
                public async Task<IActionResult> ImportFromGoogleForms([FromForm] ImportGoogleFormsDto importDto)
                {
