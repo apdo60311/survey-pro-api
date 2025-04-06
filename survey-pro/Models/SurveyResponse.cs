@@ -24,6 +24,8 @@ public class SurveyResponse
 
 public class QuestionResponse
 {
+
+    [BsonRepresentation(BsonType.ObjectId)]
     public string QuestionId { get; set; }
     public string Answer { get; set; }
     public List<string> SelectedOptions { get; set; }
